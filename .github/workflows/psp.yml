@@ -8,7 +8,7 @@ on:
 
 permissions:
   contents: read
-  security-events: write   # Required to upload SARIF to GitHub Code Scanning
+  security-events: write   
   actions: read
 
 jobs:
