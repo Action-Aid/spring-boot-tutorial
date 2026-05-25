@@ -1,4 +1,4 @@
-name: Pedagogical Security Scan
+name: PSP Spring Security Scan
 
 on:
   push:
@@ -14,17 +14,20 @@ jobs:
   psp-scan:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-      - uses: research-projects-all/Pedagogical-SAST-Profile-PSP@v1.0.1
+      - name: Run PSP (Spring)
+        uses: research-projects-all/Pedagogical-SAST-Profile-PSP@v1.0.1
         with:
-          framework: django
+          framework: spring
           output-format: sarif
-          output-file: psp-results.sarif
+          output-file: psp-spring-results.sarif
           fail-on-finding: false
 
-      - uses: github/codeql-action/upload-sarif@v4
+      - name: Upload to GitHub Code Scanning
         if: always()
+        uses: github/codeql-action/upload-sarif@v4
         with:
-          sarif_file: psp-results.sarif
-          category: psp-django
+          sarif_file: psp-spring-results.sarif
+          category: psp-spring
