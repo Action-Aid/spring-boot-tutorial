@@ -8,30 +8,23 @@ on:
 
 permissions:
   contents: read
-  security-events: write   
-  actions: read
+  security-events: write
 
 jobs:
   psp-scan:
     runs-on: ubuntu-latest
-    name: Scan tutorial code with PSP
-
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Run Pedagogical SAST Profile
-        uses: research-projects-all/Pedagogical-SAST-Profile-PSP@v1.0.0
+      - uses: research-projects-all/Pedagogical-SAST-Profile-PSP@v1.0.1
         with:
-          framework: both          # Options: django | spring | both
-          scan-path: '.'             # Scan entire repo (default)
-          output-format: sarif       # Required for GitHub Code Scanning
+          framework: django
+          output-format: sarif
           output-file: psp-results.sarif
-          fail-on-finding: false     # Set 'true' to block builds on ERROR severity
+          fail-on-finding: false
 
-      - name: Upload results to GitHub Code Scanning
-        if: always()               # Upload even if previous step found issues
-        uses: github/codeql-action/upload-sarif@v3
+      - uses: github/codeql-action/upload-sarif@v4
+        if: always()
         with:
           sarif_file: psp-results.sarif
-          category: pedagogical-sast-profile
+          category: psp-django
