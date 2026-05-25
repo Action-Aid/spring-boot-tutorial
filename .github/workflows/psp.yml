@@ -1,0 +1,41 @@
+name: Pedagogical Security Scan
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+  security-events: write
+
+jobs:
+  psp:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        framework: [django, spring]
+        include:
+          - framework: django
+            path: ./django-tutorial
+          - framework: spring
+            path: ./spring-tutorial
+
+    name: PSP Scan (${{ matrix.framework }})
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: research-projects-all/Pedagogical-SAST-Profile-PSP@v1.0.0
+        with:
+          framework: ${{ matrix.framework }}
+          scan-path: ${{ matrix.path }}
+          output-format: sarif
+          output-file: psp-${{ matrix.framework }}.sarif
+          fail-on-finding: false
+
+      - uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        with:
+          sarif_file: psp-${{ matrix.framework }}.sarif
+          category: psp-${{ matrix.framework }}
