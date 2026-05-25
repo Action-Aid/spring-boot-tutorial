@@ -2,40 +2,36 @@ name: Pedagogical Security Scan
 
 on:
   push:
-    branches: [main]
+    branches: [main, master]
   pull_request:
+    branches: [main, master]
 
 permissions:
   contents: read
-  security-events: write
+  security-events: write   # Required to upload SARIF to GitHub Code Scanning
+  actions: read
 
 jobs:
-  psp:
+  psp-scan:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        framework: [django, spring]
-        include:
-          - framework: django
-            path: ./django-tutorial
-          - framework: spring
-            path: ./spring-tutorial
-
-    name: PSP Scan (${{ matrix.framework }})
+    name: Scan tutorial code with PSP
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-      - uses: research-projects-all/Pedagogical-SAST-Profile-PSP@v1.0.0
+      - name: Run Pedagogical SAST Profile
+        uses: research-projects-all/Pedagogical-SAST-Profile-PSP@v1.0.0
         with:
-          framework: ${{ matrix.framework }}
-          scan-path: ${{ matrix.path }}
-          output-format: sarif
-          output-file: psp-${{ matrix.framework }}.sarif
-          fail-on-finding: false
+          framework: both          # Options: django | spring | both
+          scan-path: '.'             # Scan entire repo (default)
+          output-format: sarif       # Required for GitHub Code Scanning
+          output-file: psp-results.sarif
+          fail-on-finding: false     # Set 'true' to block builds on ERROR severity
 
-      - uses: github/codeql-action/upload-sarif@v3
-        if: always()
+      - name: Upload results to GitHub Code Scanning
+        if: always()               # Upload even if previous step found issues
+        uses: github/codeql-action/upload-sarif@v3
         with:
-          sarif_file: psp-${{ matrix.framework }}.sarif
-          category: psp-${{ matrix.framework }}
+          sarif_file: psp-results.sarif
+          category: pedagogical-sast-profile
